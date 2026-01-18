@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>新年贺卡</title>
+  <style>
+    :root{
+      --bg1:#120005;
+      --bg2:#2a000a;
+      --gold:#f6d36b;
+      --gold2:#ffefb6;
+      --red:#d4002a;
+      --card: rgba(255,255,255,.06);
+      --stroke: rgba(255,255,255,.10);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100svh;
+      font-family: -apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC",Segoe UI,Roboto,Helvetica,Arial;
+      color:#fff;
+      background: radial-gradient(1200px 800px at 50% -20%, #5a0016 0%, var(--bg1) 45%, var(--bg2) 100%);
+      overflow:hidden;
+    }
+    canvas{
+      position:fixed; inset:0;
+      width:100%; height:100%;
+      z-index:0;
+    }
+    .wrap{
+      position:relative;
+      z-index:1;
+      min-height:100svh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px 14px;
+    }
+    .card{
+      width:min(420px, 92vw);
+      border:1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+      border-radius:22px;
+      padding:18px 16px 14px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+      position:relative;
+      overflow:hidden;
+    }
+    .shine{
+      position:absolute; inset:-40% -20% auto -20%;
+      height:220px;
+      background: radial-gradient(circle at 30% 30%, rgba(255,239,182,.25), transparent 60%);
+      transform: rotate(-8deg);
+      pointer-events:none;
+    }
+    .top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .pill{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(246,211,107,.35);
+      background: rgba(246,211,107,.10);
+      color:var(--gold2);
+      white-space:nowrap;
+    }
+    h1{
+      margin:6px 0 2px;
+      font-size:30px;
+      letter-spacing:1px;
+      background: linear-gradient(90deg, var(--gold2), var(--gold));
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+    .sub{
+      opacity:.9;
+      font-size:14px;
+      margin:0 0 10px;
+    }
+    .msg{
+      margin:12px 0 14px;
+      padding:12px 12px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      line-height:1.55;
+      font-size:16px;
+      word-break:break-word;
+      min-height:72px;
+    }
+    .sign{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      font-size:14px;
+      opacity:.95;
+      margin-bottom:12px;
+    }
+    .sign b{color:var(--gold2)}
+    .controls{
+      display:grid;
+      gap:10px;
+    }
+    .row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    input{
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      color:#fff;
+      outline:none;
+      font-size:14px;
+    }
+    input::placeholder{color:rgba(255,255,255,.55)}
+    textarea{
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      color:#fff;
+      outline:none;
+      font-size:14px;
+      resize:none;
+      min-height:70px;
+      font-family:inherit;
+    }
+    .btns{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:4px;
+    }
+    button{
+      border:none;
+      border-radius:14px;
+      padding:12px 12px;
+      font-size:14px;
+      font-weight:600;
+      cursor:pointer;
+      color:#240006;
+      background: linear-gradient(90deg, var(--gold2), var(--gold));
+      box-shadow: 0 10px 30px rgba(246,211,107,.20);
+    }
+    button.secondary{
+      color:#fff;
+      background: rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:none;
+    }
+    .linkbox{
+      margin-top:10px;
+      padding:10px 10px;
+      border-radius:14px;
+      border:1px dashed rgba(255,255,255,.22);
+      background: rgba(0,0,0,.18);
+      font-size:12px;
+      word-break:break-all;
+      opacity:.95;
+    }
+    .hint{
+      margin-top:8px;
+      font-size:12px;
+      opacity:.75;
+      line-height:1.35;
+    }
+  </style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+
+<div class="wrap">
+  <div class="card">
+    <div class="shine"></div>
+
+    <div class="top">
+      <div class="pill" id="pillYear">新春贺卡</div>
+      <div class="pill">yaotuya · LAB</div>
+    </div>
+
+    <h1 id="title">恭喜发财</h1>
+    <p class="sub" id="subtitle">愿你新年平安喜乐，万事顺遂。</p>
+
+    <div class="msg" id="msgBox"></div>
+
+    <div class="sign">
+      <div>To: <b id="toText">朋友</b></div>
+      <div>From: <b id="fromText">我</b></div>
+    </div>
+
+    <div class="controls">
+      <div class="row">
+        <input id="to" placeholder="收件人 To（例如：妈妈）" />
+        <input id="from" placeholder="署名 From（例如：Arial）" />
+      </div>
+      <textarea id="msg" placeholder="祝福语 Message（例如：新年快乐，身体健康！）"></textarea>
+
+      <div class="btns">
+        <button id="btnBuild">生成我的链接</button>
+        <button class="secondary" id="btnShare">分享给朋友</button>
+      </div>
+
+      <div class="linkbox" id="linkBox" style="display:none;"></div>
+      <div class="hint">提示：分享后，对方打开链接会看到你写好的内容。也可以在链接参数里改：to/from/msg/year。</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --------- content ----------
+  const $ = (id)=>document.getElementById(id);
+  const params = new URLSearchParams(location.search);
+
+  const nowYear = new Date().getFullYear();
+  const year = params.get("year") || String(nowYear);
+
+  const state = {
+    to: params.get("to") || "朋友",
+    from: params.get("from") || "我",
+    msg: params.get("msg") || "新年快乐！愿你健康平安、好运常在。",
+    title: params.get("title") || "恭喜发财",
+    subtitle: params.get("sub") || "愿你新年平安喜乐，万事顺遂。"
+  };
+
+  $("pillYear").textContent = `春节 ${year} · 贺卡`;
+  $("title").textContent = state.title;
+  $("subtitle").textContent = state.subtitle;
+
+  function render(){
+    $("toText").textContent = state.to || "朋友";
+    $("fromText").textContent = state.from || "我";
+    $("msgBox").textContent = state.msg || "";
+    $("to").value = state.to;
+    $("from").value = state.from;
+    $("msg").value = state.msg;
+  }
+
+  function buildLink(){
+    const u = new URL(location.href);
+    u.searchParams.set("year", year);
+    u.searchParams.set("to", $("to").value.trim() || "朋友");
+    u.searchParams.set("from", $("from").value.trim() || "我");
+    u.searchParams.set("msg", $("msg").value.trim() || "新年快乐！");
+    // 可选：标题/副标题
+    // u.searchParams.set("title", "恭喜发财");
+    // u.searchParams.set("sub", "愿你...");
+    return u.toString();
+  }
+
+  function showLink(url){
+    const box = $("linkBox");
+    box.style.display = "block";
+    box.textContent = url;
+  }
+
+  $("btnBuild").addEventListener("click", async ()=>{
+    const url = buildLink();
+    showLink(url);
+    try{
+      await navigator.clipboard.writeText(url);
+      $("btnBuild").textContent = "已复制链接";
+      setTimeout(()=> $("btnBuild").textContent = "生成我的链接", 1200);
+    }catch(e){
+      // ignore
+    }
+  });
+
+  $("btnShare").addEventListener("click", async ()=>{
+    const url = buildLink();
+    showLink(url);
+    const text = `${$("from").value || "我"} 送你一张新年贺卡：${url}`;
+    if(navigator.share){
+      try{
+        await navigator.share({ title:"新年贺卡", text, url });
+        return;
+      }catch(e){ /* user canceled */ }
+    }
+    // fallback: copy
+    try{
+      await navigator.clipboard.writeText(url);
+      $("btnShare").textContent = "已复制，可粘贴发送";
+      setTimeout(()=> $("btnShare").textContent = "分享给朋友", 1400);
+    }catch(e){
+      alert(url);
+    }
+  });
+
+  // live update (doesn't change URL until you build/share)
+  ["to","from","msg"].forEach(id=>{
+    $(id).addEventListener("input", ()=>{
+      state.to = $("to").value;
+      state.from = $("from").value;
+      state.msg = $("msg").value;
+      render();
+    });
+  });
+
+  render();
+
+  // --------- simple fireworks / particles ----------
+  const canvas = $("fx");
+  const ctx = canvas.getContext("2d");
+  let W=0,H=0,dpr=1;
+  function resize(){
+    dpr = Math.max(1, Math.min(2, window.devicePixelRatio||1));
+    W = canvas.width = Math.floor(innerWidth*dpr);
+    H = canvas.height = Math.floor(innerHeight*dpr);
+    canvas.style.width = innerWidth+"px";
+    canvas.style.height = innerHeight+"px";
+  }
+  addEventListener("resize", resize, {passive:true});
+  resize();
+
+  const rand = (a,b)=>a+Math.random()*(b-a);
+
+  const sparks = [];
+  function burst(x,y){
+    const n = Math.floor(rand(18,28));
+    for(let i=0;i<n;i++){
+      const a = rand(0, Math.PI*2);
+      const sp = rand(1.2, 3.2)*dpr;
+      sparks.push({
+        x,y,
+        vx: Math.cos(a)*sp,
+        vy: Math.sin(a)*sp,
+        life: rand(40, 70),
+        t: 0,
+        r: rand(1.2, 2.4)*dpr,
+        g: rand(0.75, 1.0)
+      });
+    }
+  }
+
+  let tick=0;
+  function loop(){
+    tick++;
+    ctx.clearRect(0,0,W,H);
+
+    // soft vignette glow
+    ctx.fillStyle = "rgba(0,0,0,0.22)";
+    ctx.fillRect(0,0,W,H);
+
+    // occasional burst
+    if(tick%30===0 && Math.random()<0.7){
+      burst(rand(W*0.18, W*0.82), rand(H*0.18, H*0.45));
+    }
+
+    for(let i=sparks.length-1;i>=0;i--){
+      const p = sparks[i];
+      p.t++;
+      p.vx *= 0.985;
+      p.vy = p.vy*0.985 + 0.03*dpr; // gravity
+      p.x += p.vx;
+      p.y += p.vy;
+
+      const alpha = Math.max(0, 1 - p.t/p.life);
+      if(alpha<=0){
+        sparks.splice(i,1);
+        continue;
+      }
+
+      // gold-ish sparkle
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle = `rgba(246,211,107,${0.55*alpha})`;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r*2.2,0,Math.PI*2);
+      ctx.fillStyle = `rgba(255,239,182,${0.12*alpha})`;
+      ctx.fill();
+    }
+
+    requestAnimationFrame(loop);
+  }
+  loop();
+</script>
+</body>
+</html>
